@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 
-export async function POST() {
+import { NextRequest } from 'next/server';
+
+export async function POST(req: NextRequest) {
     try {
         // Note: In production you'd use a private GEMINI_API_KEY. We fallback to NEXT_PUBLIC_... if the private one isn't set yet during transition.
         const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -13,7 +15,14 @@ export async function POST() {
 
         // Create a 1-hour ephemeral token
         const expiration = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-        const response = await ai.authTokens.create({ config: { expireTime: expiration } });
+        const response = await ai.authTokens.create({
+            config: {
+                expireTime: expiration,
+                liveConnectConstraints: {
+                    model: 'gemini-2.5-flash-native-audio-preview-12-2025'
+                }
+            }
+        });
 
         const rawToken = response.name?.replace('auth_tokens/', '') || '';
 
