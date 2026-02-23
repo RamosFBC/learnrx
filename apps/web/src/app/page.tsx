@@ -68,6 +68,12 @@ export default function App() {
 
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
+      aiRef.current = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+    }
+  }, []);
+
+  useEffect(() => {
     const draw = () => {
       const ctx = canvasRef.current?.getContext("2d");
       if (ctx && imgRef.current && imgRef.current.naturalWidth) {
@@ -115,21 +121,13 @@ export default function App() {
   };
 
   const startSession = async () => {
+    if (!aiRef.current) return alert("Missing NEXT_PUBLIC_GEMINI_API_KEY in .env.local");
+
     const audioCtx = new AudioContext({ sampleRate: 16000 });
     audioCtxRef.current = audioCtx;
     nextPlayTimeRef.current = audioCtx.currentTime;
 
     try {
-      setMessages((m) => [...m, "Fetching secure token..."]);
-      const res = await fetch("/api/gemini-token", { method: "POST" });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || "Failed to get API token");
-      }
-      const { token } = await res.json();
-
-      aiRef.current = new GoogleGenAI({ apiKey: token, apiVersion: "v1alpha" });
-
       setMessages((m) => [...m, "Connecting..."]);
       const session = await aiRef.current.live.connect({
         model: 'gemini-2.5-flash-native-audio-preview-12-2025',
