@@ -69,10 +69,9 @@ export default function App() {
 
   useEffect(() => {
     let proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || "http://localhost:3001";
-    // Remove trailing slash if present to avoid '//ws/' in the connection URL
-    if (proxyUrl.endsWith('/')) {
-      proxyUrl = proxyUrl.slice(0, -1);
-    }
+    // Remove any trailing slashes to avoid '//ws/' in the connection URL
+    proxyUrl = proxyUrl.replace(/\/+$/, "");
+    console.log("[X-Ray Tutor] Using Proxy URL:", proxyUrl);
 
     // The proxy server injects the real API key. We just provide a dummy string to satisfy the SDK.
     aiRef.current = new GoogleGenAI({
