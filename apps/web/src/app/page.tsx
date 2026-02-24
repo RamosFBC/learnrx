@@ -68,7 +68,12 @@ export default function App() {
 
 
   useEffect(() => {
-    const proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || "http://localhost:3001";
+    let proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || "http://localhost:3001";
+    // Remove trailing slash if present to avoid '//ws/' in the connection URL
+    if (proxyUrl.endsWith('/')) {
+      proxyUrl = proxyUrl.slice(0, -1);
+    }
+
     // The proxy server injects the real API key. We just provide a dummy string to satisfy the SDK.
     aiRef.current = new GoogleGenAI({
       apiKey: "proxy-mode",
