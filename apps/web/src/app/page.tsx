@@ -68,8 +68,23 @@ export default function App() {
 
 
   useEffect(() => {
+    // The Google Gen AI SDK has a hardcoded leading slash that forces a `//ws/` 
+    // connection when combined with our baseUrl. Railway load balancers reject this.
+    // We'll monkey-patch the native WebSocket to clean the URL before it connects.
+    const OriginalWebSocket = window.WebSocket;
+    class PatchedWebSocket extends OriginalWebSocket {
+      constructor(url: string | URL, protocols?: string | string[]) {
+        if (typeof url === 'string') {
+          url = url.replace('//ws/google.ai', '/ws/google.ai');
+        } else if (url instanceof URL) {
+          url.href = url.href.replace('//ws/google.ai', '/ws/google.ai');
+        }
+        super(url, protocols);
+      }
+    }
+    window.WebSocket = PatchedWebSocket as any;
+
     let proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || "http://localhost:3001";
-    // Remove any trailing slashes to avoid '//ws/' in the connection URL
     proxyUrl = proxyUrl.replace(/\/+$/, "");
     console.log("[X-Ray Tutor] Using Proxy URL:", proxyUrl);
 
