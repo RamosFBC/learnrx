@@ -68,9 +68,14 @@ export default function App() {
 
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_GEMINI_API_KEY) {
-      aiRef.current = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
-    }
+    const proxyUrl = process.env.NEXT_PUBLIC_WS_PROXY_URL || "http://localhost:3001";
+    // The proxy server injects the real API key. We just provide a dummy string to satisfy the SDK.
+    aiRef.current = new GoogleGenAI({
+      apiKey: "proxy-mode",
+      httpOptions: {
+        baseUrl: proxyUrl
+      }
+    });
   }, []);
 
   useEffect(() => {
